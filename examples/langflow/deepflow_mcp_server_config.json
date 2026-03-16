@@ -1,0 +1,8 @@
+{
+  "name": "DeepFlow",
+  "config": {
+    "mode": "Streamable_HTTP",
+    "url": "http://127.0.0.1:8012/mcp",
+    "verify_ssl": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "deepFlow": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/scripts/start_mcp_stdio.sh"
+    }
+  }
+}

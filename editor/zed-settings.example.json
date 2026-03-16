@@ -1,0 +1,8 @@
+{
+  "agent_servers": {
+    "DeepFlow": {
+      "type": "custom",
+      "command": "/absolute/path/to/deepflow/scripts/start_acp.sh"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+
+ENV UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
+ENV DEEPFLOW_HOME_DIR=/app
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+COPY memories ./memories
+COPY skills ./skills
+
+RUN uv sync --frozen --no-dev
+
+EXPOSE 8011
+EXPOSE 8012
+
+CMD ["uv", "run", "deepflow", "serve"]
