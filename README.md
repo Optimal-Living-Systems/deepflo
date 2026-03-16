@@ -1,222 +1,195 @@
-```text
-╔═════════════════════════════════════════════════════════════════════════╗
-║                                                                         ║
-║   ██████╗ ███████╗███████╗██████╗ ███████╗██╗      ██████╗ ██╗    ██╗  ║
-║   ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔════╝██║     ██╔═══██╗██║    ██║  ║
-║   ██║  ██║█████╗  █████╗  ██████╔╝█████╗  ██║     ██║   ██║██║ █╗ ██║  ║
-║   ██║  ██║██╔══╝  ██╔══╝  ██╔═══╝ ██╔══╝  ██║     ██║   ██║██║███╗██║  ║
-║   ██████╔╝███████╗███████╗██║     ██║     ███████╗╚██████╔╝╚███╔███╔╝  ║
-║   ╚═════╝ ╚══════╝╚══════╝╚═╝     ╚═╝     ╚══════╝ ╚═════╝  ╚══╝╚══╝  ║
-║                                                                         ║
-║                 DeepFlow — Structured Integration Layer                 ║
-║                                                                         ║
-╚═════════════════════════════════════════════════════════════════════════╝
-```
-
-[![CI](https://github.com/Optimal-Living-Systems/deepflow/actions/workflows/ci.yml/badge.svg)](https://github.com/Optimal-Living-Systems/deepflow/actions/workflows/ci.yml)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
 # DeepFlow
 
-DeepFlow is a structured integration layer around LangChain's Deep Agents.
+**A structured integration layer between Langflow (visual planning) and LangChain Deep Agents (execution)**
 
-It exists for teams that want one Deep Agents runtime they can use from:
+Built by [Optimal Living Systems](https://github.com/Optimal-Living-Systems) · Apache 2.0
 
-- a project-specific runtime API
-- a project-specific CLI
-- ACP-capable editors
-- Langflow through a native custom component
-
-DeepFlow does not replace Deep Agents. It packages, routes, and operationalizes them.
-
-> **Disclaimer:** DeepFlow is not a LangChain product. It is a community integration layer built entirely on top of LangChain's open-source work — [Deep Agents](https://github.com/langchain-ai/deepagents), [LangGraph](https://github.com/langchain-ai/langgraph), and [LangSmith](https://smith.langchain.com). All core agent capabilities belong to the LangChain team. **LangChain rules.**
-
-## What DeepFlow Is
-
-DeepFlow is for the case where standalone `deepagents` is not enough by itself because you need:
-
-- one shared Deep Agents runtime
-- Langflow orchestration
-- IDE access through MCP
-- stable runtime boundaries between tools that do not belong in one Python environment
-- a reproducible local and Docker deployment story
-
-In practice, DeepFlow is a split-stack system:
-
-- LangChain Deep Agents do the actual agent work
-- LangGraph provides the runtime, checkpoints, interruptibility, and durable execution model
-- LangSmith provides tracing and observability
-- DeepFlow adds integration, packaging, deployment, and operator workflows around that stack
+---
 
 ## Why DeepFlow Exists
 
-Langflow `1.8.1` is pinned around LangChain `0.3.x`, while current Deep Agents requires LangChain `1.2.x`. Installing both into one environment is not a safe path.
+LangChain's [Deep Agents](https://github.com/langchain-ai/deepagents) framework is a powerful execution engine for complex, multi-step AI tasks — planning, sub-agent delegation, filesystem operations, and long-horizon reasoning. [Langflow](https://github.com/langflow-ai/langflow) is the leading visual workflow builder for LangChain applications.
 
-DeepFlow solves that by:
+They cannot run in the same Python environment.
 
-- isolating Deep Agents in their own runtime
-- exposing them to Langflow over HTTP and MCP instead of shared imports
-- keeping CLI, IDE, and Langflow workflows pointed at the same runtime layer
-- making the stack reproducible for local development and Docker deployment
+Deep Agents requires **LangChain 1.2.x**. Langflow 1.8.x is pinned to **LangChain 0.3.x** through its `langflow-base` dependency. These are incompatible version trees — they share package names but have different APIs, different class hierarchies, and different runtime expectations. No amount of import tricks or shims can make them coexist in a single Python interpreter. This is a hard constraint of Python's packaging model, not a limitation that can be engineered around.
 
-## Why Use DeepFlow Instead Of Standalone Deep Agents
+DeepFlow solves this by using each tool for what it does best.
 
-Use standalone Deep Agents when you want:
+## Architecture: Plan Visually, Execute Deeply
 
-- a direct SDK workflow
-- the upstream CLI only
-- a single-purpose research or coding agent
-- the fewest possible moving parts
+DeepFlow treats Langflow and Deep Agents as complementary layers with distinct roles:
 
-Use DeepFlow when you want:
+| Layer | Tool | Role |
+|---|---|---|
+| **Visual Planning** | Langflow | Design workflows, configure agents, map data flow, iterate on architecture |
+| **Execution Bridge** | DeepFlow Runtime | HTTP API that translates Langflow workflow definitions into Deep Agents invocations |
+| **Deep Execution** | Deep Agents CLI/SDK | Runs complex multi-step tasks with planning, sub-agents, filesystem access, and memory |
 
-- Deep Agents plus Langflow in the same overall system
-- a reusable runtime that multiple interfaces can share
-- Langflow custom components and MCP-based orchestration
-- Dockerized deployment
-- a consistent project wrapper for memory, skills, MCP, tracing, and operations
+```
+┌──────────────────────────────────┐
+│         Langflow (UI)            │
+│   Visual workflow design &       │
+│   orchestration planning         │
+│                                  │
+│   ┌──────────────────────────┐   │
+│   │   DeepFlow Component     │   │
+│   │   (custom Langflow node) │   │
+│   └───────────┬──────────────┘   │
+└───────────────┼──────────────────┘
+                │ HTTP (JSON)
+┌───────────────┼──────────────────┐
+│   DeepFlow Runtime Server        │
+│   (isolated Python environment)  │
+│                                  │
+│   ┌──────────────────────────┐   │
+│   │   Deep Agents SDK        │   │
+│   │   create_deep_agent()    │   │
+│   │   Planning, sub-agents,  │   │
+│   │   filesystem, memory     │   │
+│   └──────────────────────────┘   │
+└──────────────────────────────────┘
+```
 
-The short version:
+**Langflow is the planner, not the executor.** You design and visualize your agent workflows in Langflow's drag-and-drop interface. When a flow triggers a Deep Agents task, DeepFlow bridges the call to an isolated runtime where Deep Agents has full access to its native capabilities — planning tools, sub-agent spawning, filesystem backends, and conversation summarization.
 
-- `deepagents` is the agent harness
-- DeepFlow is the integration and operations layer around that harness
+For direct Deep Agents work (coding tasks, deep research, interactive sessions), use the **Deep Agents CLI or SDK directly** in your terminal or IDE. DeepFlow does not attempt to replace that workflow. It adds a visual planning and orchestration layer on top of it.
 
-## Primary Use Cases
+## Why Not Just Wait for Langflow to Upgrade?
 
-- Visual orchestration in Langflow while keeping Deep Agents in a modern isolated environment
-- One research runtime shared by CLI, IDE, and flow-based operator interfaces
-- Team workflows that need reproducible startup, observability, and deployment
-- A controlled bridge between long-horizon Deep Agents and UI-first orchestration systems
+Langflow will eventually migrate to LangChain 1.x — the 0.3.x line is a maintenance branch. When that happens, `pip install langflow deepagents` may just work, and the dependency isolation problem disappears.
 
-## Full Credit To LangChain
+DeepFlow exists because that migration hasn't happened yet, and there's no published timeline. If you need Deep Agents capabilities in a Langflow-orchestrated workflow today, DeepFlow is how you get there.
 
-DeepFlow is built on top of LangChain's work and should be understood that way.
+When the upstream conflict resolves, DeepFlow's HTTP bridge becomes optional — but the visual planning pattern it establishes remains useful regardless.
 
-- **Deep Agents** — the agent harness powering everything: [overview](https://docs.langchain.com/oss/python/deepagents/overview) · [GitHub](https://github.com/langchain-ai/deepagents)
-- **LangGraph** — the runtime, checkpoint, and durable execution model: [overview](https://docs.langchain.com/oss/python/langgraph/overview)
-- **LangSmith** — tracing and observability: [docs](https://docs.langchain.com/langsmith/trace-with-langchain)
-- **LangChain** — the foundation everything builds on: [GitHub](https://github.com/langchain-ai/langchain)
+## Quick Start
 
-DeepFlow does not claim authorship of Deep Agents, LangChain, LangGraph, or LangSmith. Those belong to the LangChain team and community. DeepFlow is a packaging, orchestration, and deployment layer that makes those tools usable together in this project shape.
-
-**LangChain rules.**
-
-## What is built
-
-- `DeepFlow Runtime`: FastAPI-based runtime with `/health`, `/invoke`, and `/invoke/stream` (SSE)
-- `DeepFlow CLI`: `doctor`, `serve`, `run`, `chat`, `acp`, and `mcp`
-- `DeepFlow ACP`: editor-facing ACP entrypoint
-- `DeepFlow MCP`: IDE- and Langflow-facing MCP server over `stdio` or streamable HTTP
-- `DeepFlow Langflow Bridge`: a Langflow custom component that calls the runtime over HTTP
-- `DeepFlow Workspace`: memory, skills, workspace, and LangGraph checkpoint persistence
-
-## Quick start
+### Option 1: Docker (recommended)
 
 ```bash
-git clone https://github.com/Optimal-Living-Systems/deepflow
+git clone https://github.com/Optimal-Living-Systems/deepflow.git
 cd deepflow
-make demo
+cp .env.example .env
+# Edit .env with your API keys
+
+docker compose up
 ```
 
-`make demo` will copy `.env.example` → `.env` on first run and prompt you to add a provider key. Once `.env` has a key, re-run and the runtime starts at `http://127.0.0.1:8011`.
+This starts both Langflow and the DeepFlow runtime as sibling containers. Langflow is available at `http://localhost:7860`.
 
-## Runtime API
+### Option 2: Manual (two virtual environments)
 
 ```bash
-# Blocking response
-curl -s -X POST http://127.0.0.1:8011/invoke \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is LangGraph?", "thread_id": "demo"}' | jq .
+# Terminal 1: DeepFlow Runtime
+python -m venv .venv-runtime
+source .venv-runtime/bin/activate
+pip install -e ".[runtime]"
+deepflow-runtime serve --port 8100
 
-# Streaming (SSE) — tokens arrive as they are generated
-curl -N -X POST http://127.0.0.1:8011/invoke/stream \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is LangGraph?", "thread_id": "demo"}'
-
-# Conversation history
-curl http://127.0.0.1:8011/threads/demo | jq .
-
-# Provider status
-curl http://127.0.0.1:8011/health | jq .
+# Terminal 2: Langflow
+python -m venv .venv-langflow
+source .venv-langflow/bin/activate
+pip install langflow
+# Install the DeepFlow custom component
+cp langflow_components/*.py ~/.langflow/components/
+langflow run
 ```
 
-Set `DEEPFLOW_API_KEY` in `.env` to require `Authorization: Bearer <key>` on all endpoints except `/health`. Leave it unset for local dev.
+### Option 3: Deep Agents CLI Only (no Langflow)
 
-## Main commands
+If you don't need visual planning and just want Deep Agents:
 
 ```bash
-uv run deepflow serve
-uv run deepflow run "Research the latest LangGraph release notes."
-uv run deepflow chat
-uv run deepflow acp
-uv run deepflow mcp --transport stdio
+pip install deepagents
+deepagents  # Interactive terminal agent
 ```
 
-Start Langflow with DeepFlow loaded:
+DeepFlow is not required for standalone Deep Agents usage.
 
-```bash
-./scripts/start_langflow.sh
+## Project Structure
+
+```
+deepflow/
+├── src/deepflow_runtime/     # FastAPI server wrapping Deep Agents SDK
+├── langflow_components/      # Custom Langflow nodes for DeepFlow integration
+├── deploy/                   # Docker Compose and deployment configs
+├── docs/                     # Architecture docs and guides
+├── examples/langflow/        # Example Langflow flows using DeepFlow
+├── skills/                   # Deep Agents skills (reusable agent capabilities)
+├── memories/                 # Agent memory/context persistence
+├── editor/                   # Editor integration configs
+├── scripts/                  # Setup and utility scripts
+└── tests/                    # Test suite
 ```
 
-Start both together:
+## How It Works
 
-```bash
-./scripts/start_stack.sh
-```
+### The DeepFlow Runtime
 
-## Documentation
+A lightweight FastAPI server that runs in its own Python environment with `deepagents` and `langchain>=1.2` installed. It exposes:
 
-- [docs/index.md](docs/index.md)
-- [docs/why-deepflow.md](docs/why-deepflow.md)
-- [docs/architecture.md](docs/architecture.md)
-- [docs/setup.md](docs/setup.md)
-- [docs/testing.md](docs/testing.md)
-- [docs/workflows.md](docs/workflows.md)
-- [docs/status.md](docs/status.md)
-- [docs/roadmap.md](docs/roadmap.md)
-- [deploy/README.md](deploy/README.md)
-- [editor/README.md](editor/README.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
+- `POST /run` — Execute a Deep Agent task synchronously
+- `POST /stream` — Execute with streaming response
+- `GET /health` — Runtime health check
 
-## Current state
+The runtime wraps `create_deep_agent()` and handles model configuration, tool registration, and result serialization.
 
-DeepFlow is publish-ready.
+### The Langflow Component
 
-The core split-stack implementation is built, documented, and live-validated across:
+A custom Langflow node (`DeepFlowAgent`) that appears in Langflow's component palette. It provides UI fields for:
 
-- CLI
-- IDE via MCP
-- Langflow custom component integration
-- Langflow MCP compatibility
-- PostgreSQL-backed Langflow
-- full Docker deployment
+- Runtime URL (default: `http://localhost:8100`)
+- Model selection (any LangChain-compatible model)
+- System prompt
+- Tools configuration
+- Memory/thread management
 
-ACP support is included as an optional editor-facing path. The primary validated IDE path on this machine is VS Code through MCP.
+From Langflow's perspective, it's a standard component that takes a message and returns a message. The HTTP bridge is invisible to the flow designer.
 
-## Notes
+## The Dependency Conflict Explained
 
-- DeepFlow now has first-class env/config support for Anthropic, OpenAI, Gemini, OpenRouter, DeepSeek, and Ollama.
-- The current project default model is `anthropic:claude-sonnet-4-6`.
-- LangSmith tracing is wired and verified against the default LangSmith US endpoint.
-- Gemini support is wired correctly, but the supplied Google project is quota-blocked for `gemini-2.5-pro`.
-- MCP is live-validated over streamable HTTP with `deepflow_status` and `deepflow_research`.
-- PostgreSQL-backed local Langflow is live-validated.
-- The full Docker stack is live-validated: Postgres, DeepFlow runtime, DeepFlow MCP, and Langflow.
-- If `TAVILY_API_KEY` is missing, DeepFlow falls back to DuckDuckGo search via `ddgs`.
-- The HTTP runtime is intentionally research-first and does not expose shell execution.
-- The ACP profile is where local shell-backed coding workflows belong.
+For technical readers who want the full picture:
+
+- **LangChain 1.x** (current main line): Introduced `langchain.agents.middleware`, `AgentMiddleware`, `AgentState`, restructured `langchain.chat_models`, and the `create_agent()` / `create_deep_agent()` APIs. Deep Agents is built entirely on these 1.x APIs.
+
+- **LangChain 0.3.x** (maintenance branch): The API surface that Langflow's internals depend on — different class hierarchies, different import paths, different runtime behavior.
+
+- **Python's constraint**: A single Python process can only have one version of a package loaded. You cannot `import langchain` and get 0.3.x in one module and 1.2.x in another. The interpreter's module cache (`sys.modules`) is global.
+
+This is why DeepFlow uses process-level isolation (separate server, separate venv) rather than attempting any in-process bridging. It's the same pattern used by every production ML system that needs incompatible dependency trees — microservice isolation over monolithic packaging.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+DeepFlow is an [Optimal Living Systems](https://github.com/Optimal-Living-Systems) project — a mutual aid nonprofit building open-source AI infrastructure for community benefit. Contributions are welcome from developers of all levels.
+
+## License
+
+Apache 2.0 — see [LICENSE](LICENSE) for details.
+
+## Status
+
+**Early development.** The HTTP bridge works. The Langflow component works. Documentation and packaging are actively being improved. This project exists to solve a real problem while the upstream ecosystem catches up.
+
+If Langflow migrates to LangChain 1.x and this project becomes unnecessary, that's a good outcome.
 
 ---
+
+> **Built on the shoulders of giants.**
+> DeepFlow is a community integration layer — not a LangChain product.
+> All core agent capabilities belong to the LangChain team.
+> [Deep Agents](https://github.com/langchain-ai/deepagents) · [LangGraph](https://github.com/langchain-ai/langgraph) · [LangSmith](https://smith.langchain.com) · [LangChain](https://github.com/langchain-ai/langchain)
 
 ```text
 ╔══════════════════════════════════════════════════════════════════╗
 ║                                                                  ║
-║      Built on Deep Agents · LangGraph · LangSmith · LangChain   ║
+║   Built on Deep Agents · LangGraph · LangSmith · LangChain      ║
 ║                                                                  ║
-║                    ★   LANGCHAIN RULES   ★                       ║
+║                  ★   LANGCHAIN RULES   ★                         ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
-*Built with [Claude Sonnet 4.6](https://www.anthropic.com) and Codex 5.4. All agent capabilities powered by [LangChain](https://github.com/langchain-ai).*
+*Built with [Claude Sonnet 4.6](https://www.anthropic.com) and Codex 5.4.*

@@ -1,0 +1,24 @@
+FROM python:3.11-slim
+
+# Runtime environment — Deep Agents + LangChain 1.x
+# DO NOT mix with Langflow; they have incompatible LangChain versions.
+
+ENV PYTHONUNBUFFERED=1
+ENV DEEPFLOW_PORT=8100
+
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY src ./src
+COPY memories ./memories
+COPY skills ./skills
+
+# Install runtime dependencies only (no langflow, no dev tools)
+RUN pip install --no-cache-dir -e ".[runtime]"
+
+EXPOSE ${DEEPFLOW_PORT}
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:${DEEPFLOW_PORT}/health || exit 1
+
+CMD ["sh", "-c", "deepflow-runtime serve --host 0.0.0.0 --port ${DEEPFLOW_PORT}"]
