@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 
-REPO_ROOT = Path("/home/joel/deepflow")
+REPO_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = REPO_ROOT / "examples" / "langflow"
 COMPONENTS_DIR = REPO_ROOT / "langflow_components"
 

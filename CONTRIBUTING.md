@@ -9,7 +9,7 @@ This repository is currently in active build-out. Contributions should preserve 
 ## Local workflow
 
 ```bash
-cd /home/joel/deepflow
+cd deepflow
 uv sync --extra dev
 uv run pytest
 uv run deepflow doctor
@@ -24,7 +24,7 @@ uv run deepflow doctor
    - Langflow component
    - ACP / editor workflow
    - testing and verification
-4. If you touch integration behavior, update [docs/status.md](/home/joel/deepflow/docs/status.md).
+4. If you touch integration behavior, update [docs/status.md](docs/status.md).
 
 ## Current priorities
 

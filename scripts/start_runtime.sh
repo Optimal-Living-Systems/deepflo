@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /home/joel/deepflow
+cd "$(dirname "$0")/.."
 uv run deepflow serve
