@@ -14,3 +14,6 @@ research-data/*
 !research-data/extractions/
 research-data/extractions/*
 !research-data/extractions/.gitkeep
+!research-data/methodology-evals/
+research-data/methodology-evals/*
+!research-data/methodology-evals/.gitkeep

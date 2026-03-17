@@ -1,3 +1,8 @@
+---
+name: source-extraction
+description: Deep-read a single academic source and extract structured data including research question, methodology, sample, key findings, limitations, and quality score. Output feeds synthesis and methodology evaluation.
+---
+
 # Skill: Source Extraction
 
 **Skill ID:** source-extraction

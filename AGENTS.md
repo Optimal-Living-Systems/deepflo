@@ -177,3 +177,18 @@ Human review promotes validated terms into the official taxonomy.
 - `ontology/domains/sociology/taxonomy.md` — L0-L2 hierarchy (L3-L4 growing)
 - `ontology/domains/sociology/vocabulary.md` — Controlled vocabulary with aliases
 - `ontology/schemas/base-node-schema.json` — Knowledge graph node format
+
+---
+
+## Research Pipeline Skills
+
+Skills available in `skills/` for the sociology research pipeline:
+
+| Skill | ID | Purpose |
+|---|---|---|
+| Literature Search | `literature-search` | Find relevant sources via OpenAlex, Semantic Scholar, and web search |
+| Source Extraction | `source-extraction` | Deep-read a single source and extract structured methodology/findings data |
+| Methodology Evaluation | `methodology-evaluation` | Comparative evaluation across a set of extractions — evidentiary strength, gaps, biases |
+| Ontology Lookup | `ontology-lookup` | Validate terms against the sociology taxonomy and controlled vocabulary |
+
+**Use methodology-evaluation after source-extraction**, once you have 3+ extractions for a research question. Its output feeds directly into thematic synthesis.

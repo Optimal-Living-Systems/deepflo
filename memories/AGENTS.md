@@ -123,6 +123,27 @@ Human review promotes validated terms into the official taxonomy.
 
 ---
 
+## Research Pipeline Skills
+
+| Skill | ID | Purpose |
+|---|---|---|
+| Literature Search | `literature-search` | Find relevant sources via OpenAlex, Semantic Scholar, and web search |
+| Source Extraction | `source-extraction` | Deep-read a single source and extract structured methodology/findings data |
+| Methodology Evaluation | `methodology-evaluation` | Comparative evaluation across a set of extractions — evidentiary strength, gaps, biases |
+| Ontology Lookup | `ontology-lookup` | Validate terms against the sociology taxonomy and controlled vocabulary |
+
+**Pipeline sequence for a research question:**
+1. `literature-search` → bibliography
+2. `source-extraction` × N → `research-data/extractions/`
+3. `methodology-evaluation` → `research-data/methodology-evals/`
+4. Thematic synthesis (Change 006) → synthesis report
+
+**Output paths:**
+- Extractions: `research-data/extractions/{slug}.md`
+- Methodology evaluations: `research-data/methodology-evals/{slug}.md`
+
+---
+
 ## Stack Boundaries
 
 - **HTTP runtime**: research-first, workspace-bounded, no shell execution

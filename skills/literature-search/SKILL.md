@@ -1,3 +1,8 @@
+---
+name: literature-search
+description: Search for academic literature on a sociology topic using OpenAlex, Semantic Scholar, and web sources. Produces a structured bibliography with relevance notes.
+---
+
 # Skill: Literature Search
 
 **Skill ID:** literature-search
